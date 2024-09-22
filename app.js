@@ -8,12 +8,16 @@ app.use(express.json());
 app.use(cors({
     origin: 'https://bajaj-fe584.web.app'
 }));
-// POST endpoint
+
+// POST endpoint for data and optional base64 file
 app.post('/bfhl', (req, res) => {
     const { data, file_b64 } = req.body;
 
-    if (!data) {
-        return res.status(400).json({ "is_success": false, "error": "Invalid input" });
+    // Log incoming request for debugging
+    console.log('Request received:', req.body);
+
+    if (!data || !Array.isArray(data)) {
+        return res.status(400).json({ "is_success": false, "error": "Invalid input: data should be an array" });
     }
 
     const numbers = data.filter(item => !isNaN(item));
@@ -30,7 +34,6 @@ app.post('/bfhl', (req, res) => {
 
     if (file_b64) {
         try {
-            // Split the base64 string to extract the MIME type and the data
             const parts = file_b64.split(',');
             const mimeType = parts[0].match(/:(.*?);/)[1];
             const base64Data = parts[1];
@@ -62,12 +65,12 @@ app.post('/bfhl', (req, res) => {
     });
 });
 
-// GET endpoint
+// GET endpoint to check if API is running
 app.get('/bfhl', (req, res) => {
     res.status(200).json({ "operation_code": 1 });
 });
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
